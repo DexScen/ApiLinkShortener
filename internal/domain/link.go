@@ -8,6 +8,7 @@ import (
 var (
 	ErrShortLinkNotFound = errors.New("short link not present in db")
 	ErrOverflow          = errors.New("short link amount exceeded, overflow")
+	
 )
 
 type Link struct {
