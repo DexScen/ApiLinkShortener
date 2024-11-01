@@ -7,9 +7,9 @@ import (
 )
 
 type LinksRepository interface {
-	Create(ctx context.Context, link domain.Link) error
-	GetByShortLink(ctx context.Context, shortLink string) (domain.Link, error)
-	GetByLongLink(ctx context.Context, longLink string) (domain.Link, bool)
+	GetByShortLink(ctx context.Context, shortLink *domain.Link) error
+	GetByLongLink(ctx context.Context, longLink *domain.Link) error
+	Delete(ctx context.Context, time time.Time) error
 }
 
 type Links struct {
@@ -22,18 +22,14 @@ func NewLinks(repo LinksRepository) *Links {
 	}
 }
 
-func (l *Links) Create(ctx context.Context, link domain.Link) error {
-	if link.Created.IsZero() {
-		link.Created = time.Now()
-	}
-
-	return l.repo.Create(ctx, link)
-}
-
-func (l *Links) GetByShortLink(ctx context.Context, shortLink string) (domain.Link, error) {
+func (l *Links) GetByShortLink(ctx context.Context, shortLink *domain.Link) error {
 	return l.repo.GetByShortLink(ctx, shortLink)
 }
 
-func (l *Links) GetByLongLink(ctx context.Context, longLink string) (domain.Link, bool) {
+func (l *Links) GetByLongLink(ctx context.Context, longLink *domain.Link) error {
 	return l.repo.GetByLongLink(ctx, longLink)
+}
+
+func (l *Links) Delete(ctx context.Context, time time.Time) error {
+	return l.repo.Delete(ctx, time)
 }
