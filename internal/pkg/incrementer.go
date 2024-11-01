@@ -12,7 +12,7 @@ func Find(c uint8) (int, error) {
 			return i, nil
 		}
 	}
-	return -1, fmt.Errorf("Symbol not found")
+	return -1, fmt.Errorf("symbol not found")
 }
 
 func Increment(oldString string) (string, error) {

@@ -5,6 +5,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/DexScen/ApiLinkShortener/internal/repository/psql"
+	"github.com/DexScen/ApiLinkShortener/internal/service"
+	"github.com/DexScen/ApiLinkShortener/internal/transport/rest"
+	"github.com/DexScen/ApiLinkShortener/pkg/database"
 )
 
 func main() {
@@ -26,13 +30,13 @@ func main() {
 	handler := rest.NewHandler(linksService)
 
 	srv := &http.Server{
-		Addr: ":8080",
+		Addr:    ":8080",
 		Handler: handler.InitRouter(),
 	}
-	
+
 	log.Println("Server started at:", time.Now().Format(time.RFC3339))
 
-	if err := srv.ListenAndServe(); err != nil{
+	if err := srv.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
 }

@@ -2,18 +2,22 @@ package rest
 
 import (
 	"context"
+	"encoding/json"
+	"io"
+	"log"
 	"net/http"
+	"time"
 
 	"github.com/DexScen/ApiLinkShortener/internal/domain"
 	"github.com/gorilla/mux"
 )
 
 type Links interface {
-	GetLongFromShort(ctx context.Context, link domain.Link) (domain.Link, error)
-	GetShortFromLong(ctx context.Context, link domain.Link) (domain.Link, error)
+	GetByShortLink(ctx context.Context, link *domain.Link) (domain.Link, error)
+	GetByLongLink(ctx context.Context, link *domain.Link) (domain.Link, error)
 }
 
-type Handler struct{
+type Handler struct {
 	linksService Links
 }
 
@@ -23,7 +27,7 @@ func NewHandler(links Links) *Handler {
 	}
 }
 
-func (h *Handler) InitRouter() *mux.Router{
+func (h *Handler) InitRouter() *mux.Router {
 	r := mux.NewRouter()
 	r.Use(loggingMiddleware)
 
@@ -37,21 +41,77 @@ func (h *Handler) InitRouter() *mux.Router{
 }
 
 func (h *Handler) getShortFromLong(w http.ResponseWriter, r *http.Request) {
-
-	link := &domain.Link{
-		ID: 0,
-		LongLink: ,
-		Shortlink: nil,
-		Created: nil,
+	reqBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
-	link, err := h.linksService.GetShortFromLong(context.TODO(), )
+	var inp string
+	if err = json.Unmarshal(reqBytes, &inp); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	link := &domain.Link{
+		ID:        0,
+		LongLink:  inp,
+		ShortLink: "",
+		Created:   time.Time{},
+	}
+
+	response, err := h.linksService.GetByLongLink(context.TODO(), link)
+	if err != nil {
+		log.Println("error:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	final, err := json.Marshal(response)
+	if err != nil {
+		log.Println("getShortFromLong() error:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(final)
 }
 
 func (h *Handler) getLongFromShort(w http.ResponseWriter, r *http.Request) {
-	//todo
-}
+	reqBytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-func getLinkFromRequest(r *http.Request) (string, error){
-	
+	var inp string
+	if err = json.Unmarshal(reqBytes, &inp); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	link := &domain.Link{
+		ID:        0,
+		LongLink:  "",
+		ShortLink: inp,
+		Created:   time.Time{},
+	}
+
+	response, err := h.linksService.GetByShortLink(context.TODO(), link)
+	if err != nil {
+		log.Println("error:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	final, err := json.Marshal(response)
+	if err != nil {
+		log.Println("getLongFromShort() error:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(final)
 }
