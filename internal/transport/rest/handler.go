@@ -13,8 +13,8 @@ import (
 )
 
 type Links interface {
-	GetByShortLink(ctx context.Context, link *domain.Link) (domain.Link, error)
-	GetByLongLink(ctx context.Context, link *domain.Link) (domain.Link, error)
+	GetByShortLink(ctx context.Context, link *domain.Link) error
+	GetByLongLink(ctx context.Context, link *domain.Link) error
 }
 
 type Handler struct {
@@ -60,14 +60,14 @@ func (h *Handler) getShortFromLong(w http.ResponseWriter, r *http.Request) {
 		Created:   time.Time{},
 	}
 
-	response, err := h.linksService.GetByLongLink(context.TODO(), link)
+	err = h.linksService.GetByLongLink(context.TODO(), link)
 	if err != nil {
 		log.Println("error:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	final, err := json.Marshal(response)
+	final, err := json.Marshal(*link)
 	if err != nil {
 		log.Println("getShortFromLong() error:", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -98,14 +98,14 @@ func (h *Handler) getLongFromShort(w http.ResponseWriter, r *http.Request) {
 		Created:   time.Time{},
 	}
 
-	response, err := h.linksService.GetByShortLink(context.TODO(), link)
+	err = h.linksService.GetByShortLink(context.TODO(), link)
 	if err != nil {
 		log.Println("error:", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	final, err := json.Marshal(response)
+	final, err := json.Marshal(*link)
 	if err != nil {
 		log.Println("getLongFromShort() error:", err)
 		w.WriteHeader(http.StatusInternalServerError)
