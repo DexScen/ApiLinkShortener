@@ -39,15 +39,18 @@ func (l *Links) GetByLongLink(ctx context.Context, longLink *domain.Link) error 
 		var lastLink domain.Link
 		var newString string
 		lastLink, err = l.GetLast()
+		(*longLink).Created = time.Now()
 		if err == nil {
 			(*longLink).ID = lastLink.ID + 1
-			(*longLink).Created = time.Now()
 			newString, err = pkg.Increment(lastLink.ShortLink)
 			if err == nil {
 				(*longLink).ShortLink = newString
-				err = l.Create(*longLink)
 			}
+		} else {
+			(*longLink).ID = 0
+			(*longLink).ShortLink = "00000"
 		}
+		err = l.Create(*longLink)
 	}
 	return err
 }
