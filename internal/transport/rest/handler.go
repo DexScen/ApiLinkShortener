@@ -48,7 +48,6 @@ func (h *Handler) getShortFromLong(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var inp domain.Link
-	log.Println(reqBytes, err)
 	if err = json.Unmarshal(reqBytes, &inp); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return

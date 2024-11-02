@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log"
 	"time"
 
 	"github.com/DexScen/ApiLinkShortener/internal/domain"
@@ -39,7 +38,6 @@ func (l *Links) GetByShortLink(ctx context.Context, shortLink *domain.Link) erro
 func (l *Links) GetByLongLink(ctx context.Context, longLink *domain.Link) error {
 	err := l.db.QueryRow("SELECT id, longLink, shortLink, created FROM links WHERE longLink = $1", (*longLink).LongLink).
 		Scan(&longLink.ID, &longLink.LongLink, &longLink.ShortLink, &longLink.Created)
-	log.Println(err)
 	if errors.Is(err, sql.ErrNoRows) {
 		var lastLink domain.Link
 		var newString string
