@@ -16,3 +16,4 @@ type Link struct {
 	ShortLink string    `json:"shortlink"`
 	Created   time.Time `json:"created"`
 }
+ 

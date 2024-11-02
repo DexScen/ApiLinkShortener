@@ -33,8 +33,8 @@ func (h *Handler) InitRouter() *mux.Router {
 
 	links := r.PathPrefix("/links").Subrouter()
 	{
-		links.HandleFunc("", h.getLongFromShort).Methods(http.MethodGet)
-		links.HandleFunc("", h.getShortFromLong).Methods(http.MethodGet)
+		links.HandleFunc("/tolong", h.getLongFromShort).Methods(http.MethodPost)
+		links.HandleFunc("/toshort", h.getShortFromLong).Methods(http.MethodPost)
 	}
 
 	return r
@@ -47,7 +47,8 @@ func (h *Handler) getShortFromLong(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var inp string
+	var inp domain.Link
+	log.Println(reqBytes, err)
 	if err = json.Unmarshal(reqBytes, &inp); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -55,7 +56,7 @@ func (h *Handler) getShortFromLong(w http.ResponseWriter, r *http.Request) {
 
 	link := &domain.Link{
 		ID:        0,
-		LongLink:  inp,
+		LongLink:  inp.LongLink,
 		ShortLink: "",
 		Created:   time.Time{},
 	}
@@ -85,7 +86,7 @@ func (h *Handler) getLongFromShort(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var inp string
+	var inp domain.Link
 	if err = json.Unmarshal(reqBytes, &inp); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -94,7 +95,7 @@ func (h *Handler) getLongFromShort(w http.ResponseWriter, r *http.Request) {
 	link := &domain.Link{
 		ID:        0,
 		LongLink:  "",
-		ShortLink: inp,
+		ShortLink: inp.ShortLink,
 		Created:   time.Time{},
 	}
 

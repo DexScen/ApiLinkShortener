@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
+	"time"
+
 	"github.com/DexScen/ApiLinkShortener/internal/domain"
 	"github.com/DexScen/ApiLinkShortener/internal/pkg"
-	"time"
 )
 
 type Links struct {
@@ -18,23 +20,26 @@ func NewLinks(db *sql.DB) *Links {
 }
 
 func (l *Links) Create(link domain.Link) error {
-	_, err := l.db.Exec("INSERT INTO links (id, longLink, shortLink, created) values $1 $2 $3 $4",
+	_, err := l.db.Exec("INSERT INTO links (id, longLink, shortLink, created) VALUES ($1, $2, $3, $4)",
 		link.ID, link.LongLink, link.ShortLink, link.Created)
 	return err
 }
 
 func (l *Links) GetByShortLink(ctx context.Context, shortLink *domain.Link) error {
-	err := l.db.QueryRow("SELECT id, longLink, shortLink, created FROM links where shortlink = $3", (*shortLink).ShortLink).
-		Scan(shortLink.ID, shortLink.LongLink, shortLink.ShortLink, shortLink.Created)
+	var str string = (*shortLink).ShortLink[len((*shortLink).ShortLink)-5:]
+	err := l.db.QueryRow("SELECT id, longLink, shortLink, created FROM links WHERE shortlink = $1", str).
+		Scan(&shortLink.ID, &shortLink.LongLink, &shortLink.ShortLink, &shortLink.Created)
 	if errors.Is(err, sql.ErrNoRows) {
 		return domain.ErrShortLinkNotFound
 	}
+	(*shortLink).ShortLink = "https://www.shor.ty/" + (*shortLink).ShortLink
 	return err
 }
 
 func (l *Links) GetByLongLink(ctx context.Context, longLink *domain.Link) error {
-	err := l.db.QueryRow("SELECT id, longLink, shortLink, created FROM links where longLink = $2", (*longLink).LongLink).
-		Scan(longLink.ID, longLink.LongLink, longLink.ShortLink, longLink.Created)
+	err := l.db.QueryRow("SELECT id, longLink, shortLink, created FROM links WHERE longLink = $1", (*longLink).LongLink).
+		Scan(&longLink.ID, &longLink.LongLink, &longLink.ShortLink, &longLink.Created)
+	log.Println(err)
 	if errors.Is(err, sql.ErrNoRows) {
 		var lastLink domain.Link
 		var newString string
@@ -52,6 +57,7 @@ func (l *Links) GetByLongLink(ctx context.Context, longLink *domain.Link) error 
 		}
 		err = l.Create(*longLink)
 	}
+	(*longLink).ShortLink = "https://www.shor.ty/" + (*longLink).ShortLink
 	return err
 }
 
@@ -63,6 +69,6 @@ func (l *Links) GetLast() (domain.Link, error) {
 }
 
 func (l *Links) Delete(ctx context.Context, time time.Time) error {
-	_, err := l.db.Exec("DELETE FROM links WHERE created = $4", time)
+	_, err := l.db.Exec("DELETE FROM links WHERE created = $1", time)
 	return err
 }

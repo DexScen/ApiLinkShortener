@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
-	"github.com/DexScen/ApiLinkShortener/internal/domain"
 	"time"
+
+	"github.com/DexScen/ApiLinkShortener/internal/domain"
 )
 
 type LinksRepository interface {
