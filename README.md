@@ -11,6 +11,8 @@ Takes JSON body:
 
 ![image](https://github.com/user-attachments/assets/79d54451-ad03-4fae-9b12-9511cd04cb18)
 
+OR
+
 2)
 
 ![image](https://github.com/user-attachments/assets/5b07b747-7a34-466b-99ed-f6eca86f8ece)
